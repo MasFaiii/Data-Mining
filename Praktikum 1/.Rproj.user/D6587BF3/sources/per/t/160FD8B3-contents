@@ -1,0 +1,41 @@
+mydata= read.csv("https://raw.githubusercontent.com/deepanshu88/Datasets/master/UploadedFiles/german_credit.csv")
+# Check types of variables
+str(mydata)
+
+
+mydata$Creditability = as.factor(mydata$Creditability)
+
+library(randomForest)
+set.seed(71) #pilih angka bebas. buat simulasinya
+rf <-randomForest(Creditability~.,data=mydata, ntree=500) 
+print(rf)
+
+floor(sqrt(ncol(mydata) - 1)) #mtry formula
+
+mtry <- tuneRF(mydata[-1],mydata$Creditability, ntreeTry=500,
+               stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
+best.m <- mtry[mtry[, 2] == min(mtry[, 2]), 1]
+print(mtry)
+print(best.m)
+
+set.seed(71)
+rf <-randomForest(Creditability~.,data=mydata, mtry=3, importance=TRUE,ntree=500)
+print(rf)
+#Evaluate variable importance
+importance(rf)
+varImpPlot(rf)
+
+pred1=predict(rf,type = "prob")
+library(ROCR)
+perf = prediction(pred1[,2], mydata$Creditability)
+# 1. Area under curve
+auc = performance(perf, "auc")
+auc
+# 2. True Positive and Negative Rate
+pred3 = performance(perf, "tpr","fpr")
+# 3. Plot the ROC curve
+plot(pred3,main="ROC Curve for Random Forest",col=2,lwd=2)
+abline(a=0,b=1,lwd=2,lty=2,col="gray")
+
+dataset1 <- dataset %>%
+  select(-gill.size, -odor, -spore.print.color, -stalk.root, -gill.color)
